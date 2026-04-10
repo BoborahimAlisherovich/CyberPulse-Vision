@@ -1,4 +1,9 @@
+<<<<<<< HEAD
 # 🚀 CyberPulse Vision | Virtual Mouse & AR Hand Tracker
+=======
+![IMG_20260410_153409](https://github.com/user-attachments/assets/7f3c2b6c-67c1-4edc-a5d4-9263fcccc072)
+# AR Neon Hand Tracker
+>>>>>>> 2959bf8f5e30d518db26c8a349837456109b02df
 
 CyberPulse Vision is a futuristic, highly-optimized Computer Vision project built natively in Python. It tracks your hands in real-time using AI and overlays a gorgeous **Neon AR Effect**. More importantly, it turns your hand into a fully functional **Virtual Mouse** to completely control your computer without touching it!
 
