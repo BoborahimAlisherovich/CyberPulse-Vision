@@ -1,3 +1,4 @@
+![IMG_20260410_153409](https://github.com/user-attachments/assets/7f3c2b6c-67c1-4edc-a5d4-9263fcccc072)
 # AR Neon Hand Tracker
 
 This is a real-time computer vision project that tracks hands via webcam and overlays a futuristic neon / hologram effect on top of them. Built with OpenCV and MediaPipe.
