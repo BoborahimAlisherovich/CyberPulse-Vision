@@ -1,44 +1,41 @@
-# AR Neon Hand Tracker
+# 🚀 CyberPulse Vision | Virtual Mouse & AR Hand Tracker
 
-This is a real-time computer vision project that tracks hands via webcam and overlays a futuristic neon / hologram effect on top of them. Built with OpenCV and MediaPipe.
+CyberPulse Vision is a futuristic, highly-optimized Computer Vision project built natively in Python. It tracks your hands in real-time using AI and overlays a gorgeous **Neon AR Effect**. More importantly, it turns your hand into a fully functional **Virtual Mouse** to completely control your computer without touching it!
 
-## Features ✨
-- **Real-Time Hand Tracking:** Tracks up to two hands smoothly.
-- **Neon AR Overlay:** Replaces standard static lines with a glowing dynamic bloom effect.
-- **Dynamic Colors:** Colors shift and rotate across the hue spectrum based on real-world time passing.
-- **Animated Links:** If two hands are held up, glowing holographic chains link the fingers of both hands.
-- **Gesture Detection:** Detects basic gestures like `FIST`, `OPEN HAND`, `PEACE`, or counts the number of held-up fingers.
-- **Holographic UI HUD:** FPS and hand count are presented on a dark translucent overlay resembling gaming / AR head-up displays.
+## ✨ Features
 
-## How it works 🛠️
+- 🖱️ **Virtual Mouse Control:** Move your cursor across the entire computer screen.
+- 👆 **Click & Double-Click:** Effortlessly snap your fingers to Left Click. Snap twice rapidly (thanks to the `0-delay` state logic) to Double-Click and open applications in Windows.
+- 🎨 **Holographic Neon Bloom:** Realistic, vibrant glowing AR overlays that dynamically change color and track the exact skeletal frame of your hands.
+- ⚡ **Zero-Lag Input Engine:** Completely bypasses standard PyAutoGUI input chunking delays using `PAUSE = 0` and an optimized Gaussian Blur core to deliver silky-smooth desktop-grade FPS.
+- 🔧 **Modern AI Backend:** Defeats Python 3.13 deprecation limitations; runs exclusively onto MediaPipe's cutting-edge edge AI `Tasks API` (`vision.HandLandmarker`).
+- 🧑‍💻 **Gesture HUD:** A dark translucent gaming-style Heads Up Display (HUD) tracks your exact hand states (Move mode, Click ready, FPS metrics) dynamically over your webcam feed.
 
-1. **Detection (MediaPipe):** The script first feeds the webcam frame (converted to RGB) into MediaPipe's Hand machine-learning model. It extracts the 21 3D joint landmarks for each hand found.
-2. **Gesture Mechanics:** Compares the Y-coordinates of finger tips directly against lower joint coordinates to mathematically estimate which fingers are extended versus folded. 
-3. **Neon Effect (OpenCV):**
-   - The system creates a blank pitch-black image ("canvas").
-   - It draws thick, hyper-bright connected lines on this black canvas mapping the hand skeletal structure. 
-   - A heavy Gaussian Blur is applied directly to this canvas. This diffuses the bright lines, turning them into a realistic "glow/bloom" field.
-   - Using OpenCV's `addWeighted`, the blurred glow canvas is additively layered over the original camera image.
-   - Extremely thin pure white lines are strictly drawn completely on top as the "core" of the light tubes (just like real neon lights).
+## 🤲 How to Use Gestures (Qo'llanma)
 
-## Installation
+1. **Move Cursor (`Kursor harakati`)**: 
+   Release **only your Index Finger** (Ko'rsatkich barmoq). Keep everything else folded. Just point at the screen and move your hand; your computer's mouse will follow!
 
-Ensure you have Python installed. It is highly recommended to use a virtual environment.
+2. **Prepare to Click (`Tayyorgarlik`)**: 
+   Raise your **Middle Finger** alongside your Index Finger (simulating a 'Peace ✌️' sign). The mouse will pause briefly for precision, and the screen will announce `MOUSE: READY/CLICK`.
 
-Open your terminal in this directory and install the requirements:
+3. **Click & Double Click (`Bosish`)**:
+   Pinch your **Index and Middle fingers** together! A glowing green line will bridge your fingertips, and your computer will register a normal physical Left Click. Note:
+   - For a **Single Click**: Touch both fingertips together.
+   - For a **Double Click**: Vigorously snap the two fingers together *twice* in fast succession (Touch -> Re-open -> Touch).
 
-```bash
-pip install -r requirements.txt
-```
+## 🛠️ Installation
 
-## Running the Application
+Ensure your webcam is connected properly before starting the application.
 
-Execute the script from the terminal:
+1. Install dependencies from the terminal:
+   ```bash
+   pip install -r requirements.txt
+   ```
+2. Run the application:
+   ```bash
+   python main.py
+   ```
+   *(Note: The very first time you boot the tracker, it will securely auto-download the `.task` tracking AI model locally. Allow it five seconds).*
 
-```bash
-python main.py
-```
-
-*Note: Ensure your webcam is unplugged and firmly connected if it fails to open. Once running, bring your hands naturally into view.* 
-
-**Press `q` on your keyboard** while the window is focused to exit the program safely.
+To safely exit the application, make sure the camera window is clicked/active and press the **`q`** key on your keyboard.

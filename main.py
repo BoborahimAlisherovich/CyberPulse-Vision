@@ -5,8 +5,12 @@ import time
 import math
 import os
 import urllib.request
+import pyautogui
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
+
+pyautogui.FAILSAFE = False
+pyautogui.PAUSE = 0 # Fixes the severe lagging problem!
 
 # Fixed hand connections since mp.solutions is deprecated in python 3.13
 HAND_CONNECTIONS = [
@@ -140,8 +144,8 @@ def create_neon_effect(img, hands, connections, time_val):
             
             cv2.line(glow_canvas, pt1, pt2, color_link, thickness=dynamic_thickness)
 
-    # 5. Apply severe Gaussian blur to create the bloom effect
-    glow_canvas = cv2.GaussianBlur(glow_canvas, (35, 35), 0)
+    # 5. Apply severe Gaussian blur to create the bloom effect (Reduced for performance)
+    glow_canvas = cv2.GaussianBlur(glow_canvas, (15, 15), 0)
     
     # 6. Blend the glow canvas onto the original webcam frame
     result = cv2.addWeighted(img, 1.0, glow_canvas, 0.9, 0)
@@ -166,16 +170,25 @@ def create_neon_effect(img, hands, connections, time_val):
     return result
 
 def main():
-    print("Starting AR Neon Hand Tracker...")
+    print("Starting AR Neon Hand Tracker with Mouse Control...")
     print("Press 'q' in the window to exit.")
     
     cap = cv2.VideoCapture(0)
     
     # Setting up high resolution
-    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
-    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
+    cam_w, cam_h = 1280, 720
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, cam_w)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, cam_h)
     
     tracker = HandTracker(max_hands=2)
+    
+    # Virtual Mouse Settings
+    screen_w, screen_h = pyautogui.size()
+    frameR = 150 # Frame Reduction area margin
+    smoothening = 7 
+    plocX, plocY = 0, 0
+    clocX, clocY = 0, 0
+    clicked = False # State flag for fixing multiple clicks and enabling double click
     
     pTime = 0
     start_time = time.time()
@@ -202,18 +215,83 @@ def main():
             # Add neon drawing over hands
             img = create_neon_effect(img, hands, HAND_CONNECTIONS, current_time)
             
+            # --- VIRTUAL MOUSE LOGIC ---
+            # Draw frame reduction box that maps to computer screen
+            cv2.rectangle(img, (frameR, frameR), (cam_w - frameR, cam_h - frameR), (100, 0, 100), 1)
+            
+            # Control with the primary hand (first hand detected)
+            hand1 = hands[0]
+            fingers = tracker.fingers_up(hand1)
+            lmList = hand1["lmList"]
+            
+            if len(lmList) > 12: # Safety check
+                x1, y1 = lmList[8] # Index finger tip
+                x2, y2 = lmList[12] # Middle finger tip
+                
+                # 1. Moving Mode: Index finger is up, Middle finger is down
+                if fingers[1] == 1 and fingers[2] == 0:
+                    # Convert coordinates (camera view to screen size)
+                    x3 = np.interp(x1, (frameR, cam_w - frameR), (0, screen_w))
+                    y3 = np.interp(y1, (frameR, cam_h - frameR), (0, screen_h))
+                    
+                    # Smoothen values to prevent shaky cursor
+                    clocX = plocX + (x3 - plocX) / smoothening
+                    clocY = plocY + (y3 - plocY) / smoothening
+                    
+                    # Move Mouse via PyAutoGUI
+                    try:
+                        pyautogui.moveTo(clocX, clocY)
+                        plocX, plocY = clocX, clocY
+                    except Exception:
+                        pass
+                        
+                    # Feedback for moving mode
+                    cv2.circle(img, (x1, y1), 15, (255, 0, 255), cv2.FILLED)
+                    
+                # 2. Click Mode: Both Index and Middle fingers are up
+                elif fingers[1] == 1 and fingers[2] == 1:
+                    # Find distance between the two fingertips
+                    length = math.hypot(x2 - x1, y2 - y1)
+                    
+                    # Also move the mouse naturally while fingers are extended
+                    x3 = np.interp(x1, (frameR, cam_w - frameR), (0, screen_w))
+                    y3 = np.interp(y1, (frameR, cam_h - frameR), (0, screen_h))
+                    clocX = plocX + (x3 - plocX) / smoothening
+                    clocY = plocY + (y3 - plocY) / smoothening
+                    try:
+                        pyautogui.moveTo(clocX, clocY)
+                        plocX, plocY = clocX, clocY
+                    except Exception:
+                        pass
+                    
+                    # If fingers touch/snap close, simulate Left Click
+                    if length < 40:
+                        cv2.circle(img, (x1, y1), 15, (0, 255, 0), cv2.FILLED)
+                        cv2.line(img, (x1, y1), (x2, y2), (0, 255, 0), 3)
+                        
+                        if not clicked:
+                            try:
+                                pyautogui.click()
+                                clicked = True
+                            except Exception:
+                                pass
+                    else:
+                        clicked = False # Reset click allowed if fingers apart
+            
             # Gesture text positioning logic
             for i, hand in enumerate(hands):
                 fingers = tracker.fingers_up(hand)
                 open_fingers = sum(fingers)
                 
                 gesture = f"[{hand['type']}] "
-                if open_fingers == 0:
+                if fingers[1] == 1 and fingers[2] == 0:
+                    gesture += "MOUSE: MOVE"
+                elif fingers[1] == 1 and fingers[2] == 1:
+                    gesture += "MOUSE: READY/CLICK"
+                elif open_fingers == 0:
                     gesture += "FIST"
                 elif open_fingers == 5:
                     gesture += "OPEN HAND"
-                elif open_fingers == 2 and fingers[1] == 1 and fingers[2] == 1:
-                    gesture += "PEACE"
                 else:
                     gesture += f"FINGERS: {open_fingers}"
                 
